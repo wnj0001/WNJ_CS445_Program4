@@ -29,11 +29,21 @@ typedef struct {
 
 // Represents a 3-Dimensional cube object and its attributes.
 typedef struct {
+    Point center;
     float size;
     Color color;
-    int position;
-    Point translation;
 } Cube;
+
+// Pointer to Point object that represents the origin of the scene.
+Point* origin;
+
+// Float that represents the current location of the z-plane on which 
+// the drawn objects' origins lie.
+float z_plane;
+
+// Floats that represent the size of the player and enemy cubes
+float player_size;
+float enemy_size;
 
 // Pointers to Point objects that represent the starting positions
 // of the player and enemy ships
@@ -43,19 +53,15 @@ Point* enemy_start;
 // Pointers to Color objects that represent the colors used in the 
 // program.
 //      - White for the background, 
-//      - Black for player lines,
+//      - player_color for player lines,
 //      - Red for the enemy ships.
-Color* white;
-Color* black;
-Color* red;
+Color* bg_color;
+Color* player_color;
+Color* enemy_color;
 
 // Pointers to Cube objects representing the player and enemy ships.
 Cube* player;
 Cube* enemy;
-
-// Floats that represent the size of the player and enemy cubes
-float player_size;
-float enemy_size;
 
 
 
@@ -64,7 +70,7 @@ float enemy_size;
 // ------------------------------------
 
 // Used as a constructor to initialize a new Point object.
-Point* newPoint(float x, float y, float z) {
+Point* make_Point(float x, float y, float z) {
     Point* point = (Point*)malloc(sizeof(Point));
 
     point->x = x;
@@ -75,24 +81,22 @@ Point* newPoint(float x, float y, float z) {
 }
 
 // Used as a constructor to initialize a new Color object.
-Color* newColor(float red, float green, float blue) {
+Color* make_Color(float red, float green, float blue) {
     Color* color = (Color*)malloc(sizeof(Color));
 
-    color->red = red;
+    color->red   = red;
     color->green = green;
-    color->blue = blue;
+    color->blue  = blue;
 
     return color;
 }
 
-// Used as a constructor to initialize a new Cube object.
-Cube* newCube(float size, Color* color) {
-    Cube* cube = malloc(sizeof(Cube));
-    cube->size = size;
-    cube->color = *color;
-    cube->translation.x = 0.0;
-    cube->translation.y = 0.0;
-    cube->translation.z = 0.0;
+// Used as a constructor to initialize a new Color object.
+Cube* make_Cube(Point* center, float size, Color* color) {
+    Cube* cube   = malloc(sizeof(Cube));
+    cube->center = *center;
+    cube->size   = size;
+    cube->color  = *color;
     return cube;
 }
 
@@ -103,23 +107,27 @@ Cube* newCube(float size, Color* color) {
 // ------------------------------------
 
 // 
-void DrawCube(Cube* cube) {
+void draw_Cube(Cube* cube) {
     glPushMatrix();
-    glTranslatef(cube->translation.x,
-                 cube->translation.y,
-                 cube->translation.z);
-
+    glTranslatef(cube->center.x,
+                 cube->center.y,
+                 cube->center.z);
+    glColor3f( cube->color.red, cube->color.green, cube->color.blue);
     glutWireCube(cube->size);
 
-    glTranslatef((cube->translation.x * -1),
-                 (cube->translation.y * -1),
-                 (cube->translation.z * -1));
+    glTranslatef((cube->center.x * -1),
+                 (cube->center.y * -1),
+                 (cube->center.z * -1));
     glPopMatrix();
 }
 
 // 
-void drawAll() {
-
+void draw_all_objects() {
+    glClearColor(bg_color->red, bg_color->green, bg_color->blue, 0.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    draw_Cube(player);
+    draw_Cube(enemy);
+    glFlush();
 }
 
 // 
@@ -134,7 +142,7 @@ void animate() {
 // ------------------------------------
 
 // 
-void handleKeys(unsigned char c, GLint x, GLint y) {
+void handle_keys(unsigned char c, GLint x, GLint y) {
 
 }
 
@@ -146,23 +154,33 @@ void handleKeys(unsigned char c, GLint x, GLint y) {
 
 // Initializes that objects and variables that will be used.
 void init() {
-    enemy_start = newPoint( canvas_Width / 2,
-                            canvas_Height + (enemy_size / 2),
-                            z_plane );
-    enemy_start = newPoint( canvas_Width / 2,
-                            canvas_Height + (enemy_size / 2),
-                            z_plane );
+    origin = make_Point(0.0, 0.0, 0.0);
+    z_plane = -1.0;
 
-    player = newCube(player_start, 25.0, black);
-    enemy = newCube(enemy_start, 25.0, red);
+    player_size = 25.0;
+    enemy_size  = 25.0;
+
+    bg_color     = make_Color(1.0, 1.0, 1.0);
+    player_color = make_Color(0.0, 0.0, 0.0);
+    enemy_color  = make_Color(0.9, 0.1, 0.1);
+
+    player_start = make_Point(origin->x,
+                              origin->y - (canvas_Height / 2) - (player_size / 2),
+                              z_plane);
+    enemy_start  = make_Point(origin->x,
+                              origin->y + (canvas_Height / 2) + (enemy_size / 2),
+                              z_plane);
+
+    player = make_Cube(player_start, 25.0, player_color);
+    enemy  = make_Cube(enemy_start, 25.0, enemy_color);
 }
 
 int main(int argc, char** argv) {
     init();
     glutInit(&argc, argv);
     my_setup(canvas_Width, canvas_Height, canvas_Name);
-    glutDisplayFunc(drawAll);
-    glutKeyboardFunc(handleKeys);
+    glutDisplayFunc(draw_all_objects);
+    glutKeyboardFunc(handle_keys);
     glutMainLoop();
     return 0;
 }

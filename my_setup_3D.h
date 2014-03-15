@@ -20,14 +20,17 @@ that sets viewing parameters for orthographic 3D display.
 
 void my_3d_projection(int width, int height)
 {
-    GLfloat width_bound, height_bound;
-    width_bound = width; height_bound = height;
+    GLfloat left_side   = (GLfloat)((width / 2) * -1);
+    GLfloat right_side  = (GLfloat)(width / 2);
+    GLfloat bottom_side = (GLfloat)((height / 2) * -1);
+    GLfloat top_side    = (GLfloat)(height / 2);
+    GLfloat front_plane = 0.0;
+    GLfloat back_plane  = -1000.0;
+
     glViewport(0, 0, width, height);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(0.0, width_bound, 0.0, height_bound, 100.0, -300.0);
-    // gluPerspective(58.0, width_bound/height_bound, 100.0, 300.0); 
-    glTranslatef(-200.0, -200.0, -200.0);
+    glOrtho(left_side, right_side, bottom_side, top_side, front_plane, back_plane);
     glMatrixMode(GL_MODELVIEW);
 }
 

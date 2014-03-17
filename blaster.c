@@ -28,11 +28,16 @@ typedef struct {
 } Color;
 
 // Represents a 3-Dimensional cube object and its attributes.
+//      Movement is tri-state:
+//          0: no movement
+//          1: movement to left
+//          2: movement to right
 typedef struct {
     Point center;
     float size;
     Color color;
     int is_alive;
+    int movement;
 } Cube;
 
 // Pointer to Point object that represents the origin of the scene.
@@ -41,6 +46,9 @@ Point* origin;
 // Float that represents the current location of the z-plane on which 
 // the drawn objects' origins lie.
 float z_plane;
+
+// Float that represents the current frame rate of the animation
+float frame_rate;
 
 // Floats that represent the size of the player and enemy cubes
 float player_size;
@@ -73,8 +81,12 @@ int enemy_spawn_time;
 // 
 float enemy_total_dist;
 float enemy_total_time;
-float enemy_step_time; 
-float enemy_step_dist; 
+float enemy_step_dist;
+
+//
+float player_total_dist;
+float player_total_time;
+float player_step_dist;
 
 
 
@@ -111,6 +123,7 @@ Cube* make_cube(Point* center, float size, Color* color) {
     cube->size   = size;
     cube->color  = *color;
     cube->is_alive = 0;
+    cube->movement = 0;
     return cube;
 }
 
@@ -133,7 +146,6 @@ void spawn_enemy() {
 void update_enemy() {
     if(enemy->is_alive) {
         enemy->center.y -= enemy_step_dist;
-        glutTimerFunc(enemy_step_time, update_enemy, 1);
     }
 }
 
@@ -143,7 +155,17 @@ void kill_enemy() {
 }
 
 //
-void move_player(char* direction) {
+void update_player() {
+    if (player->movement == 1 && (player->center.x >= (origin->x - (canvas_width / 2) + player->size))) {
+        player->center.x -= player_step_dist; 
+    }
+    else if (player->movement == 2 && (player->center.x <= (origin->x + (canvas_width / 2) - player->size))) {
+        player->center.x += player_step_dist;
+    }
+}
+
+//
+void fire_laser() {
 
 }
 
@@ -195,16 +217,25 @@ void draw_all_objects() {
     glClearColor(bg_color->red, bg_color->green, bg_color->blue, 0.0);
     glClear(GL_COLOR_BUFFER_BIT);
     draw_cube(player); 
-    spawn_enemy();
-    draw_cube(enemy);
+    if(enemy->is_alive) {
+        draw_cube(enemy);
+    }
     glFlush();
 }
 
 // 
 void animate() {
-
+    draw_all_objects();
+    update_enemy();
+    update_player();
+    glutTimerFunc(1000 * frame_rate, animate, 1);
 }
 
+//
+void initial_draw() {
+    spawn_enemy();
+    glutTimerFunc(1000 * frame_rate, animate, 1);
+}
 
 
 // ------------------------------------
@@ -214,16 +245,27 @@ void animate() {
 // 
 void handle_keys(unsigned char c, GLint x, GLint y) {
     if(c == 'h' || c == 'h') {
-        move_player("left");
+        player->movement = 1;
     }
     else if(c == 'l' || c == 'L') {
-        move_player("right");
+        player->movement = 2;
     }
     else if(c == ' ') {
-
+        //fire_laser();
+        kill_enemy();
     }
     else if(c == '\0') {
         exit(0);
+    }
+}
+
+// 
+void handle_keys_up(unsigned char c, GLint x, GLint y) {
+    if(c == 'h' || c == 'h') {
+        player->movement = 0;
+    }
+    else if(c == 'l' || c == 'L') {
+        player->movement = 0;
     }
 }
 
@@ -237,6 +279,7 @@ void handle_keys(unsigned char c, GLint x, GLint y) {
 void init() {
     origin = make_point(0.0, 0.0, 0.0);
     z_plane = -1.0;
+    frame_rate = 1.0 / 30.0;
 
     player_size = 25.0;
     enemy_size  = 25.0;
@@ -262,18 +305,26 @@ void init() {
     enemy_min_time = 2750;
     enemy_max_time = 3500;
 
+    // player animation rate calculation
     enemy_total_dist = (canvas_height - enemy->size);
     enemy_total_time = 2.5;
-    enemy_step_time  = 10/1000;
-    enemy_step_dist  = (enemy_total_dist / enemy_total_time) * enemy_step_time;
+    enemy_step_dist  = (enemy_total_dist / enemy_total_time) * frame_rate;
+
+    // enemy animation rate calculation
+    player_total_dist = (canvas_width - player->size);
+    player_total_time = 0.75;
+    player_step_dist  = (player_total_dist / player_total_time) * frame_rate;
+
 }
 
 int main(int argc, char** argv) {
     init();
     glutInit(&argc, argv);
     my_setup(canvas_width, canvas_height, canvas_name);
-    glutDisplayFunc(draw_all_objects);
+    glutDisplayFunc(initial_draw);
     glutKeyboardFunc(handle_keys);
+    glutKeyboardUpFunc(handle_keys_up);
+    spawn_enemy();
     glutMainLoop();
     return 0;
 }

@@ -1,11 +1,68 @@
 /*********************************************************************
 
     Software Architecture Statement:
-        
+
+    This program is a space-shooter style game, where the player must 
+fire a laser at the enemy invaders falling from the top of the canvas, 
+before the enemies can reach the bottom of the canvas. First, the 
+variables and objects are all initialized, and the OpenGL specific
+functions are registered. When the main loop begins, the 
+initial_draw() method is called, which calls the spawn_enemy() 
+function and then calls the animate() function after a frame's worth 
+of time has passed. In the spawn_enemy() function, the enemy's center
+point is set to a random location along the top of the canvas, and 
+then the function is set to be called again after a random interval of
+time between 2.75 and 3.50 seconds. 
+    
+    In the animate() function, as long as the game is not in a game 
+over state, the draw_all_objects() function is called, followed by 
+update_enemy() and update_player(). The animate function is then 
+registered to be called again after a single frame's worth of time has
+passed. If the game is in a game_over state, then the draw_game_over() 
+function, which displays the game over canvas. The draw_all_objects() 
+function calls the draw_cube() function once to draw the player, and 
+if the enemy is alive, it also calls the draw_cube function to draw 
+the enemy. If the laser is currently being fired, then the laser will 
+be drawn on the canvas. Finally, the draw_scoreboard() function is 
+called to draw the score to the canvas, and glutSwapBuffers() is 
+called to swap the drawing buffers and display the drawn objects to 
+the canvas. 
+    
+    In the update_enemy() function, if the enemy is alive, the
+enemy's is moved towards the bottom of the canvas by an increment 
+determined using the total distance and time, and if the enemy is 
+touching the bottom of the canvas while alive, the game is put into a 
+game over state by toggling the is_game_over variable. In the 
+update_player() function, the player moves toward the left or right of
+the canvas if the corresponding key was pressed by the player.
+    
+    In the draw_cube() function, a glutWireCube primitive is generated
+and translated using the center point of the input cube. In the 
+draw_laser() function, a line is drawn from the center of the player, 
+to the top of the canvas. 
+    
+    The handle_keys() method sets a tri-state movement flag for the 
+player when 'H' or 'L' are pressed, and this flag is then used by the
+update_player() function to move the player left or right. When the
+spacebar is pressed, the activate_laser() function will be called.
+The function activate_laser() toggles the flag for the laser to be 
+drawn, checks to see if the laser hits the enemy, and then registers
+the disable_laser() function to be called after 0.15 seconds. The
+disable_laser() function turns off the flag for the laser to be drawn.
+The handle_keys_up() function is used to turn off the movement flags, 
+and stop the movement of the player, when the 'H' or 'L' keys are no
+longer being pressed.
+    
+    If the test_hit function determines that the laser hit the enemy,
+then the kill_enemy() function is called, and a point is given to the
+player. The kill_enemy() function toggles the is_alive state of the
+enemy, and keeps it from being drawn until a new enemy is spawned.
     
     WNJ  03/2014
 
  ********************************************************************/
+
+
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -91,13 +148,13 @@ int enemy_min_time, enemy_max_time;
 int enemy_spawn_time;
 
 // Floats used to calculate the rate at which the enemy ships move
-// down the screen. 
+// down the glSwapBuffers. 
 float enemy_total_dist;
 float enemy_total_time;
 float enemy_step_dist;
 
 // Floats used to calculate the rate at which the player's ship 
-// can move along the bottom of the screen.
+// can move along the bottom of the canvas.
 float player_total_dist;
 float player_total_time;
 float player_step_dist;
@@ -264,8 +321,8 @@ void draw_laser(Cube* cube) {
     glEnd();
 }
 
-// Draws the scoreboard onto the top right of the screen.
-void drawScoreboard() {
+// Draws the scoreboard onto the top right of the canvas.
+void draw_scoreboard() {
     glColor3f(player_color->red ,player_color->green ,player_color->blue);
     glRasterPos3f(125.0, 180.0, z_plane + 1);
     char *string = "Score: ";
@@ -294,12 +351,12 @@ void draw_all_objects() {
     if(is_laser_firing) {
         draw_laser(player);
     }
-    drawScoreboard();
+    draw_scoreboard();
     glutSwapBuffers();
 }
 
 // Draws a game over message when the player has failed to kill the 
-// enemy before it reached the bottom of the screen.
+// enemy before it reached the bottom of the canvas.
 void draw_game_over() {
     glClearColor(1.0, 1.0, 1.0, 0.0);
     glClear(GL_COLOR_BUFFER_BIT);

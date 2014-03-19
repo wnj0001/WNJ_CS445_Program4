@@ -380,9 +380,13 @@
 	"build_system": "Packages/C++/C++.sublime-build",
 	"command_palette":
 	{
-		"height": 87.0,
+		"height": 117.0,
 		"selected_items":
 		[
+			[
+				"instal",
+				"Package Control: Install Package"
+			],
 			[
 				"remove",
 				"Package Control: Remove Package"
@@ -394,10 +398,6 @@
 			[
 				"alignt",
 				"Preferences: Alignment Key Bindings – Default"
-			],
-			[
-				"instal",
-				"Package Control: Install Package"
 			],
 			[
 				"inst",
@@ -672,7 +672,7 @@
 				"Set Syntax: Markdown Extended"
 			]
 		],
-		"width": 514.0
+		"width": 480.0
 	},
 	"console":
 	{
@@ -1153,6 +1153,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
+					"stack_index": 0,
 					"type": "text"
 				},
 				{
@@ -1288,6 +1289,7 @@
 						"translation.y": 430.0,
 						"zoom_level": 1.0
 					},
+					"stack_index": 1,
 					"type": "text"
 				}
 			]
@@ -1327,6 +1329,10 @@
 	"output.exec":
 	{
 		"height": 266.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
 	},
 	"project": "WNJ_CS445_Program4.sublime-project",
 	"replace":

@@ -217,7 +217,6 @@ void spawn_enemy() {
     enemy_spawn_x = (rand() % ((enemy_max_x+1) - enemy_min_x)) + enemy_min_x;
     enemy->center.y = enemy_start->y;
     enemy->center.x = enemy_spawn_x;
-    printf("Center: %f  Spawn: %d\n", enemy->center.x, enemy_spawn_x);
 
     srand(time(NULL));
     enemy_spawn_time = (rand() % (enemy_max_time+1 - enemy_min_time)) + enemy_min_time;

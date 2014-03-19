@@ -1,0 +1,16 @@
+{
+	"folders":
+	[
+		{
+			"file_exclude_patterns":
+			[
+				"WNJ_CS445_Program4.opensdf",
+				"WNJ_CS445_Program4.sln",
+				"WNJ_CS445_Program4.vcxproj",
+				"WNJ_CS445_Program4.vcxproj.filters"
+			],
+			"follow_symlinks": true,
+			"path": "C:\\Users\\Nick\\Dropbox\\School\\2014_Spring\\CS445 - Graphics\\Homework\\Programming\\WNJ_CS445_Program4"
+		}
+	]
+}
